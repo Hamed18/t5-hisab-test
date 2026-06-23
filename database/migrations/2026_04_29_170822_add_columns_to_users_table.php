@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('phone', 20)->nullable()->after('email');
+            $table->string('avatar', 255)->nullable()->after('phone');
+            $table->string('locale', 5)->default('en')->after('avatar');
+            $table->string('timezone', 50)->default('Asia/Dhaka')->after('locale');
+            $table->foreignId('default_business_id')->nullable()->after('timezone');
+            $table->timestamp('last_login_at')->nullable()->after('default_business_id');
+            $table->boolean('is_active')->default(true)->after('last_login_at');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('users');
+    }
+};
