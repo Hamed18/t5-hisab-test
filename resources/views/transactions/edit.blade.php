@@ -26,6 +26,19 @@
     @method('PUT')
 
     <div class="form-group">
+        <label for="business_id">Business *</label>
+        <select id="business_id" name="business_id" required>
+            @if(isset($userBusinesses))
+                @foreach ($userBusinesses as $business)
+                    <option value="{{ $business->id }}" {{ old('business_id', $transaction->business_id) == $business->id ? 'selected' : '' }}>
+                        {{ $business->name }}
+                    </option>
+                @endforeach
+            @endif
+        </select>
+    </div>
+
+    <div class="form-group">
         <label for="date">Date *</label>
         <input type="date" id="date" name="date" value="{{ old('date', $transaction->date ? $transaction->date->format('Y-m-d') : '') }}" required>
     </div>
