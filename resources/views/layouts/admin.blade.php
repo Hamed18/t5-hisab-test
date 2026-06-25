@@ -470,7 +470,7 @@
       <h2>Top5Way</h2>
     </div>
 
-    <nav>
+    {{-- <nav>
       <!-- Dashboard -->
       <a href="#" class="active"><i class="fas fa-th-large"></i> Dashboard</a>
 
@@ -530,7 +530,7 @@
           <i class="fas fa-sign-out-alt"></i> Logout
         </button>
       </div>
-    </nav>
+    </nav> --}}
   </aside>
 
   <!-- ===== MAIN ===== -->

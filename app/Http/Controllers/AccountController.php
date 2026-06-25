@@ -57,15 +57,15 @@ class AccountController extends Controller
 
     public function store(Request $request)
     {
-        Log::info('from accountcon...', $request->all());
+        // Log::info('from accountcon...', $request->all());
     
         // Release session lock so concurrent requests don't block
         session_write_close();
 
         $validated = $request->validate([
             'name'            => 'required|string|max:255',
-            'type'            => 'required|in:bank,mobile_wallet,cash,card,crypto,other',
-            'opening_balance' => 'required|numeric|min:0',
+            'type'            => 'nullable|in:bank,mobile_wallet,cash,card,crypto,other',
+            'opening_balance' => 'nullable|numeric|min:0',
             'account_number'  => 'nullable|string|max:50',
             'bank_name'       => 'nullable|string|max:100',
             'branch_name'     => 'nullable|string|max:100',

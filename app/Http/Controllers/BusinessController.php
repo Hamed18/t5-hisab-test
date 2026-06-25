@@ -6,6 +6,7 @@ use App\Models\Business;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class BusinessController extends Controller
 {
@@ -116,11 +117,15 @@ class BusinessController extends Controller
 
     public function edit(Business $business)
     {
+        // Log::info('from edit businesscon...', $request->all());
+
         return view('businesses.edit', compact('business'));
     }
 
     public function update(Request $request, Business $business)
     {
+        // Log::info('from update businesscon...', $request->all());
+
         $validated = $request->validate([
             'name'        => 'required|string|max:255|unique:businesses,name,'.$business->id,
             'slug'        => 'nullable|string|max:255|unique:businesses,slug,'.$business->id,
@@ -141,7 +146,6 @@ class BusinessController extends Controller
         }
 
         if ($request->hasFile('logo')) {
-            // Delete old logo
             if ($business->logo && Storage::disk('public')->exists($business->logo)) {
                 Storage::disk('public')->delete($business->logo);
             }
@@ -155,7 +159,6 @@ class BusinessController extends Controller
 
     public function destroy(Business $business)
     {
-        // Prevent deletion if transactions exist? Optional check.
         if ($business->transactions()->exists()) {
             return back()->withErrors(['error' => 'Cannot delete business with transactions.']);
         }
@@ -167,7 +170,7 @@ class BusinessController extends Controller
     public function checkSlug(Request $request)
     {
         $slug = $request->get('slug');
-        $excludeId = $request->get('exclude_id');   // for edit – ignore the current business
+        $excludeId = $request->get('exclude_id');  
 
         $query = Business::where('slug', $slug);
         if ($excludeId) {

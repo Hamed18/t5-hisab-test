@@ -12,6 +12,7 @@ use App\Models\TransactionType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class TransactionController extends Controller
 {
@@ -20,81 +21,51 @@ class TransactionController extends Controller
         return Auth::user()->default_business_id;
     }
 
-    public function index()
-    {
-        // Log::info('from transaction  index...', $businessId);
-        $businessId = $this->currentBusinessId();
+    public function index(Request $request)
+{
+    $query = Transaction::query();
 
-        $filterableTypes = TransactionType::active()->pluck('label', 'slug');
-        $filterableCategories = Category::where('business_id', $businessId)->active()->pluck('name', 'id');
-        $filterableAccounts = Account::active()->pluck('name', 'id');
-
-        $filters = [
-            [
-                'name' => 'type',
-                'label' => 'Type',
-                'type' => 'select',
-                'options' => $filterableTypes->toArray(),
-            ],
-            [
-                'name' => 'category_id',
-                'label' => 'Category',
-                'type' => 'select',
-                'options' => $filterableCategories->toArray(),
-            ],
-            [
-                'name' => 'account_id',
-                'label' => 'Account',
-                'type' => 'select',
-                'options' => $filterableAccounts->toArray(),
-            ],
-            [
-                'name' => 'date_from',
-                'label' => 'From Date',
-                'type' => 'date',
-            ],
-            [
-                'name' => 'date_to',
-                'label' => 'To Date',
-                'type' => 'date',
-            ],
-        ];
-
-        $query = Transaction::where('business_id', $businessId)
-            ->with(['category', 'account']);
-
-        if (request()->filled('search')) {
-            $search = request('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('description', 'like', "%{$search}%")
-                  ->orWhereHas('category', fn ($c) => $c->where('name', 'like', "%{$search}%"))
-                  ->orWhereHas('account', fn ($a) => $a->where('name', 'like', "%{$search}%"));
-            });
-        }
-
-        if (request()->filled('type')) {
-            $query->where('type', request('type'));
-        }
-        if (request()->filled('category_id')) {
-            $query->where('category_id', request('category_id'));
-        }
-        if (request()->filled('account_id')) {
-            $query->where('account_id', request('account_id'));
-        }
-        if (request()->filled('date_from')) {
-            $query->where('date', '>=', request('date_from'));
-        }
-        if (request()->filled('date_to')) {
-            $query->where('date', '<=', request('date_to'));
-        }
-
-        $transactions = $query->orderBy('date', 'desc')
-            ->orderBy('id', 'desc')
-            ->paginate(20)
-            ->appends(request()->query());
-
-        return view('transactions.index', compact('transactions', 'filters'));
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('description', 'like', "%{$search}%")
+              ->orWhere('type', 'like', "%{$search}%")
+              ->orWhere('receipt_id', 'like', "%{$search}%")
+              ->orWhere('notes', 'like', "%{$search}%");
+        });
     }
+
+    if ($request->filled('type')) {
+        $query->where('type', $request->type);
+    }
+    if ($request->filled('is_active')) {
+        $query->where('is_active', $request->is_active == '1');
+    }
+
+    $transactions = $query->orderBy('date', 'desc')  // Changed from 'name' to 'date'
+        ->orderBy('id', 'desc')  // Secondary sort
+        ->paginate(20)
+        ->appends($request->query());
+
+    // Build filters
+    $types = Transaction::select('type')->distinct()->pluck('type');
+    $filters = [
+        [
+            'name' => 'type',
+            'label' => 'Type',
+            'type' => 'select',
+            'options' => $types->mapWithKeys(fn($t) => [$t => ucfirst($t)])->toArray(),
+        ],
+        [
+            'name' => 'is_active',
+            'label' => 'Active',
+            'type' => 'select',
+            'options' => ['1' => 'Yes', '0' => 'No'],
+        ],
+    ];
+
+    return view('transactions.index', compact('transactions', 'filters'));
+}
 
     public function create()
     {
@@ -173,8 +144,6 @@ class TransactionController extends Controller
         $validated['added_by_user_id'] = Auth::id();
         $validated['status'] = 'approved';
 
-        // Map custom view selection safely to your layout's column name
-// Overwrite or populate the actual intended column name:
 $validated['type'] = $validated['category_custom'];
         $transaction = Transaction::create($validated);
 
@@ -196,6 +165,8 @@ $validated['type'] = $validated['category_custom'];
 
     public function edit(Transaction $transaction)
     {
+        // Log::info('from accountcon...', $request->all());
+
         if ($transaction->business_id !== $this->currentBusinessId()) {
             abort(403);
         }
@@ -237,7 +208,9 @@ $validated['type'] = $validated['category_custom'];
     }
 
     public function update(Request $request, Transaction $transaction)
-    {
+    { 
+        // Log::info('from accountcon...', $request->all());
+
         if ($transaction->business_id !== $this->currentBusinessId()) {
             abort(403);
         }
@@ -255,7 +228,7 @@ $validated['type'] = $validated['category_custom'];
             'date' => 'required|date',
             'type' => 'required|in:'.TransactionType::active()->pluck('slug')->implode(','),
             'category_id' => 'nullable|exists:categories,id,business_id,'.$request->business_id,
-            'category_custom' => 'required|in:xyz,abx,pqr', // ✅ Updating verification framework pattern
+            'category_custom' => 'required|in:xyz,abx,pqr', 
             'account_id' => 'required|exists:accounts,id',
             'amount' => 'required|numeric|min:0',
             'currency' => 'required|string|size:3',
