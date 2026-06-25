@@ -1,575 +1,665 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', config('app.name'))</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, sans-serif; background: #f3f4f6; display: flex; min-height: 100vh; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Top5Way · Admin</title>
+  <!-- Font Awesome (optional, for icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        /* Sidebar – desktop */
-        .sidebar {
-            width: 220px;
-            background: #1e293b;
-            color: #e2e8f0;
-            padding: 1.5rem 1rem;
-            flex-shrink: 0;
-            transition: transform 0.3s ease;
-            z-index: 20;
-        }
-        .sidebar h2 { font-size: 1.25rem; margin-bottom: 2rem; color: #fff; padding-left: 3rem; }
-        .sidebar nav { display: flex; flex-direction: column; gap: 0.5rem; }
-        .sidebar a {
-            display: block;
-            padding: 0.5rem 0.75rem;
-            border-radius: 0.375rem;
-            color: #cbd5e1;
-            text-decoration: none;
-        }
-        .sidebar a:hover, .sidebar a.active { background: #334155; color: #fff; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #f1f5f9;
+      display: flex;
+      min-height: 100vh;
+    }
 
-        /* Collapsible submenu */
-        .sidebar-group { }
-        .sidebar-toggle {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-        }
-        .sidebar-toggle .arrow { font-size: 0.8rem; transition: transform 0.2s; }
-        .sidebar-toggle.open .arrow { transform: rotate(-180deg); }
-        .sidebar-sub { padding-left: 1.25rem; }
-        .sidebar-sub.hidden { display: none; }
-        .sidebar-sub a { padding-left: 1.5rem; font-size: 0.9rem; }
+    /* ---------- SIDEBAR (toggle left) ---------- */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 260px;
+      background: #0f172a; /* deep slate */
+      color: #e2e8f0;
+      padding: 1.8rem 1rem 2rem;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s ease, box-shadow 0.2s;
+      z-index: 40;
+      overflow-y: auto;
+      box-shadow: 2px 0 12px rgba(0,0,0,0.08);
+      transform: translateX(0);
+    }
 
-        /* Main content */
-        .main {
-            flex: 1;
-            padding: 2rem;
-            overflow-y: auto;
-            background: #f3f4f6;
-        }
-        .flash { background: #d1fae5; color: #065f46; padding: 0.75rem; border-radius: 0.375rem; margin-bottom: 1rem; }
+    .sidebar.closed {
+      transform: translateX(-100%);
+    }
 
-        /* Hamburger button – hidden on desktop */
-        .hamburger {
-            display: none;
-            position: fixed;
-            top: 1rem;
-            left: 1rem;
-            z-index: 30;
-            background: #1e293b;
-            color: #fff;
-            border: none;
-            padding: 0.5rem;
-            font-size: 1.5rem;
-            cursor: pointer;
-            border-radius: 0.375rem;
-        }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 2.2rem;
+      padding-left: 0.25rem;
+    }
 
-        /* Overlay for mobile */
-        .overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 15;
-        }
-        .overlay.show { display: block; }
+    .sidebar-header i {
+      font-size: 1.8rem;
+      color: #38bdf8;
+    }
 
-        .hidden { display: none; }
+    .sidebar-header h2 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: white;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
 
-        /* Mobile responsive */
-        @media (max-width: 767px) {
-            body { flex-direction: column; }
-            .sidebar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100vh;
-                transform: translateX(-100%);
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
-                padding-bottom: 4rem;           /* give logout button breathing room */
-            }
-            .sidebar.open { transform: translateX(0); }
-            .hamburger { display: block; }
-            .main { margin-left: 0; padding-top: 3rem; width: 100%; }
-        }
+    .sidebar nav {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      flex: 1;
+    }
 
-        /* ----- searchable-creatable-select component ----- */
-        .searchable-select-wrapper {
-            position: relative;
-            width: 100%;
-            user-select: none;
-        }
+    .sidebar a, .sidebar .nav-label {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0.9rem;
+      border-radius: 0.5rem;
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 450;
+      transition: background 0.15s, color 0.15s;
+    }
 
-        .ss-trigger {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.375rem;
-            background: white;
-            cursor: pointer;
-            font-size: 1rem;
-        }
+    .sidebar a i {
+      width: 1.4rem;
+      font-size: 1.1rem;
+      text-align: center;
+      color: #64748b;
+      transition: color 0.15s;
+    }
 
-        .ss-arrow {
-            font-size: 0.8rem;
-            margin-left: 0.5rem;
-            transition: transform 0.2s;
-        }
-        .searchable-select-wrapper.open .ss-arrow {
-            transform: rotate(-180deg);
-        }
+    .sidebar a:hover {
+      background: #1e293b;
+      color: #f1f5f9;
+    }
 
-        .ss-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #d1d5db;
-            border-radius: 0.375rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            z-index: 100;
-            margin-top: 0.25rem;
-            max-height: 260px;
-            display: flex;
-            flex-direction: column;
-        }
-        .ss-dropdown.hidden { display: none; }
-        .searchable-select-wrapper.open .ss-dropdown { display: flex; }
+    .sidebar a:hover i {
+      color: #94a3b8;
+    }
 
-        .ss-top-row {
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-            padding: 0.5rem;
-            gap: 0.25rem;
-        }
-        .ss-top-row .ss-search {
-            flex: 1;
-            border: none;
-            outline: none;
-            padding: 0.5rem;
-            font-size: 0.95rem;
-        }
+    .sidebar a.active {
+      background: #1e293b;
+      color: white;
+      font-weight: 500;
+    }
 
-        .ss-create-btn {
-            background: none;
-            border: none;
-            color: #4f46e5;
-            font-weight: 500;
-            cursor: pointer;
-            white-space: nowrap;
-            padding: 0.5rem;
-        }
-        .ss-create-btn:hover { text-decoration: underline; }
+    .sidebar a.active i {
+      color: #38bdf8;
+    }
 
-        .ss-create-link {
-            color: #4f46e5;
-            text-decoration: none;
-            font-weight: 500;
-            white-space: nowrap;
-            padding: 0.5rem;
-        }
-        .ss-create-link:hover { text-decoration: underline; }
+    /* submenu toggle */
+    .sidebar-group .sidebar-toggle {
+      cursor: pointer;
+      justify-content: space-between;
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-size: 0.95rem;
+      padding: 0.6rem 0.9rem;
+      border-radius: 0.5rem;
+      color: #cbd5e1;
+      font-weight: 450;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
 
-        .ss-create-area {
-            padding: 0 0.5rem 0.5rem;
-        }
+    .sidebar-group .sidebar-toggle:hover {
+      background: #1e293b;
+      color: #f1f5f9;
+    }
 
-        /* 👇 UPDATED: now stacks extra fields vertically */
-        .ss-create-form {
-            display: flex;
-            flex-direction: column;       /* column layout for extra fields */
-            gap: 0.3rem;
-            padding: 0.3rem;
-        }
-        .ss-create-form.hidden { display: none; }
+    .sidebar-group .sidebar-toggle i:first-child {
+      width: 1.4rem;
+      font-size: 1.1rem;
+      color: #64748b;
+    }
 
-        /* row for name input + save/cancel */
-        .ss-create-row {
-            display: flex;
-            gap: 0.25rem;
-            align-items: center;
-        }
+    .sidebar-group .sidebar-toggle .arrow {
+      margin-left: auto;
+      font-size: 0.7rem;
+      transition: transform 0.2s;
+    }
 
-        .ss-create-input {
-            flex: 1;
-            padding: 0.4rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.25rem;
-            font-size: 0.95rem;
-        }
+    .sidebar-group .sidebar-toggle.open .arrow {
+      transform: rotate(180deg);
+    }
 
-        .ss-create-save {
-            background: #4f46e5;
-            color: white;
-            border: none;
-            padding: 0.4rem 0.6rem;
-            border-radius: 0.25rem;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        .ss-create-save:hover { background: #4338ca; }
+    .sidebar-sub {
+      padding-left: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
 
-        .ss-create-cancel {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 0 0.3rem;
-        }
+    .sidebar-sub.hidden {
+      display: none;
+    }
 
-        /* extra selects inside the creation form */
-        .ss-create-form select {
-            font-size: 0.85rem;
-            padding: 0.2rem 0.3rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.25rem;
-            width: auto;
-        }
+    .sidebar-sub a {
+      padding: 0.4rem 0.9rem;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      gap: 0.5rem;
+    }
 
-        .ss-options {
-            overflow-y: auto;
-            flex: 1;
-        }
+    .sidebar-sub a i {
+      font-size: 0.8rem;
+      width: 1.2rem;
+      color: #475569;
+    }
 
-        .ss-option {
-            padding: 0.5rem 0.75rem;
-            cursor: pointer;
-            border-bottom: 1px solid #f3f4f6;
-        }
-        .ss-option:hover,
-        .ss-option.selected {
-            background: #e0e7ff;
-            color: #3730a3;
-        }
-        .ss-option.hidden-by-search { display: none; }
+    .sidebar-sub a.active {
+      background: #1e293b;
+      color: #e2e8f0;
+    }
 
-        .hidden { display: none; }
-        /* ---------- Modern form card ---------- */
-        .form-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 0.75rem;
-            max-width: 640px;
-            margin: 0 auto;               /* centre the card */
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        }
+    .sidebar-sub a.active i {
+      color: #38bdf8;
+    }
 
-        .form-card .form-group {
-            margin-bottom: 1.25rem;
-        }
+    /* logout button */
+    .logout-btn {
+      margin-top: 1.2rem;
+      border-top: 1px solid #1e293b;
+      padding-top: 1rem;
+    }
 
-        .form-card label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 0.35rem;
-            color: #374151;
-            font-size: 0.9rem;
-        }
+    .logout-btn button {
+      background: transparent;
+      border: 1px solid #334155;
+      color: #cbd5e1;
+      padding: 0.6rem 0.9rem;
+      width: 100%;
+      border-radius: 0.5rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: 0.15s;
+    }
 
-        .form-card input,
-        .form-card select,
-        .form-card textarea {
-            width: 100%;
-            padding: 0.6rem 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-            background: #fff;
-        }
+    .logout-btn button i {
+      font-size: 1.1rem;
+      color: #64748b;
+    }
 
-        .form-card input:focus,
-        .form-card select:focus,
-        .form-card textarea:focus {
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-            outline: none;
-        }
+    .logout-btn button:hover {
+      background: #1e293b;
+      color: white;
+      border-color: #475569;
+    }
 
-        /* Two‑column row */
-        .form-row {
-            display: flex;
-            gap: 1rem;
-        }
-        .form-row .form-group {
-            flex: 1;
-        }
+    /* ---------- HAMBURGER (toggle) ---------- */
+    .hamburger {
+      display: none;
+      position: fixed;
+      top: 1.2rem;
+      left: 1.2rem;
+      z-index: 50;
+      background: #0f172a;
+      border: none;
+      color: white;
+      font-size: 1.6rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      transition: 0.2s;
+    }
 
-        /* Buttons */
-        .form-card .form-actions {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            margin-top: 2rem;
-        }
+    .hamburger:hover {
+      background: #1e293b;
+    }
 
-        .form-card .btn-primary {
-            background: #46e54c;
-            color: white;
-            padding: 0.65rem 1.75rem;
-            border: none;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .form-card .btn-primary:hover { background: #4338ca; }
+    /* overlay */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 35;
+      backdrop-filter: blur(2px);
+    }
 
-        .form-card .btn-secondary {
-            background: #4f46e5;
-            color: white;
-            border: 1px solid #d1d5db;
-            padding: 0.65rem 1.75rem;
-            border-radius: 0.5rem;
-            text-decoration: none;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        .form-card .btn-secondary:hover { background: #46e54c; }
+    .overlay.show {
+      display: block;
+    }
 
-        /* On small screens, two‑column rows stack */
-        @media (max-width: 500px) {
-            .form-row { flex-direction: column; gap: 0; }
-            .form-card { padding: 1.25rem; }
-        }
-        /* Reset checkbox & radio button widths */
-        .form-card input[type="checkbox"],
-        .form-card input[type="radio"] {
-            width: auto;               /* don't stretch */
-            margin-right: 0.5rem;
-            vertical-align: middle;
-        }
+    /* ---------- MAIN CONTENT ---------- */
+    .main {
+      margin-left: 260px;
+      flex: 1;
+      padding: 2rem 2.5rem;
+      background: #f1f5f9;
+      min-height: 100vh;
+      transition: margin-left 0.25s ease;
+    }
 
-        /* Better label alignment for checkboxes */
-        .form-card label input[type="checkbox"] + span,
-        .form-card label:has(input[type="checkbox"]) {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    .main-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .greeting h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #0f172a;
+      letter-spacing: -0.3px;
+    }
+
+    .greeting p {
+      color: #475569;
+      margin-top: 0.1rem;
+      font-size: 0.95rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+    }
+
+    .header-actions .badge {
+      background: #e2e8f0;
+      padding: 0.4rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #1e293b;
+    }
+
+    .header-actions .btn-outline {
+      background: white;
+      border: 1px solid #cbd5e1;
+      padding: 0.4rem 1.2rem;
+      border-radius: 2rem;
+      font-weight: 500;
+      color: #1e293b;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: 0.15s;
+    }
+
+    .header-actions .btn-outline i {
+      margin-right: 0.4rem;
+    }
+
+    .header-actions .btn-outline:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    /* dashboard cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 1.5rem 1.2rem;
+      border-radius: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border: 1px solid #e9edf2;
+    }
+
+    .stat-card .label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .stat-card .value {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-top: 0.3rem;
+    }
+
+    .stat-card .sub {
+      font-size: 0.85rem;
+      color: #475569;
+      margin-top: 0.3rem;
+    }
+
+    .stat-card .trend {
+      color: #16a34a;
+      font-weight: 500;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .action-row .btn {
+      background: white;
+      border: 1px solid #d1d5db;
+      padding: 0.6rem 1.4rem;
+      border-radius: 0.75rem;
+      font-weight: 500;
+      color: #1e293b;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: 0.15s;
+    }
+
+    .action-row .btn-primary {
+      background: #0f172a;
+      border: 1px solid #0f172a;
+      color: white;
+    }
+
+    .action-row .btn-primary i {
+      color: #94a3b8;
+    }
+
+    .action-row .btn-primary:hover {
+      background: #1e293b;
+    }
+
+    .action-row .btn-outline:hover {
+      background: #f8fafc;
+    }
+
+    /* ---------- MOBILE RESPONSIVE ---------- */
+    @media (max-width: 767px) {
+      .sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+        padding-top: 1.2rem;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .hamburger {
+        display: block;
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 1.5rem 1.2rem;
+        padding-top: 4.5rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem;
+      }
+
+      .greeting h1 {
+        font-size: 1.4rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* flash / demo */
+    .flash {
+      background: #d1fae5;
+      color: #065f46;
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      margin-bottom: 1.5rem;
+      font-weight: 500;
+    }
+  </style>
 </head>
 <body>
-    <!-- Hamburger button (mobile) -->
-    <button class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show');">
-        ☰
-    </button>
-    <!-- Overlay -->
-    <div class="overlay" id="overlay" onclick="document.getElementById('sidebar').classList.remove('open'); this.classList.remove('show');"></div>
 
-    <aside class="sidebar" id="sidebar">
-        <h2>{{ config('app.name', 't5_hisab') }}</h2>
-        <nav>
-            <a href="{{ url('/dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">Dashboard</a>
+  <!-- HAMBURGER (toggle) -->
+  <button class="hamburger" id="hamburgerBtn" aria-label="Toggle sidebar">
+    <i class="fas fa-bars"></i>
+  </button>
 
-            <div class="sidebar-group">
-                <a href="#" class="sidebar-toggle {{ request()->routeIs('transactions.*', 'transaction-create.*', 'transaction-types.*', 'categories.*', 'currency-rates.*', 'dues.*', 'fixed-costs.*', 'salary-report.*', 'loans.*') ? 'open' : '' }}"
-                   onclick="event.preventDefault(); this.classList.toggle('open'); this.nextElementSibling.classList.toggle('hidden');">
-                    <span>Transactions</span>
-                    <span class="arrow">▾</span>
-                </a>
-                <div class="sidebar-sub {{ request()->routeIs('transactions.*', 'transaction-create.*', 'transaction-types.*', 'categories.*', 'currency-rates.*', 'dues.*', 'fixed-costs.*', 'salary-report.*', 'loans.*') ? '' : 'hidden' }}">
-                    <a href="{{ route('transactions.index') }}" class="{{ request()->routeIs('transactions.index') ? 'active' : '' }}">All Transactions</a>
-                    <a href="{{ route('transactions.create') }}" class="{{ request()->routeIs('transactions.create') ? 'active' : '' }}">Create Transaction</a>
-                    <a href="{{ route('transaction-types.index') }}" class="{{ request()->routeIs('transaction-types.*') ? 'active' : '' }}">Types</a>
-                    <a href="{{ route('categories.index') }}" class="{{ request()->routeIs('categories.*') ? 'active' : '' }}">Categories</a>
-                    <a href="{{ route('currency-rates.index') }}" class="{{ request()->routeIs('currency-rates.*') ? 'active' : '' }}">Currency Rates</a>
-                    <a href="{{ route('dues.index') }}" class="{{ request()->routeIs('dues.*') ? 'active' : '' }}">Dues</a>
-                    <a href="{{ route('fixed-costs.index') }}" class="{{ request()->routeIs('fixed-costs.*') ? 'active' : '' }}">Fixed Costs</a>
-                    <a href="{{ route('salary-report.index') }}" class="{{ request()->routeIs('salary-report.*') ? 'active' : '' }}">Salary Tracker</a>
-                    <a href="{{ route('loans.index') }}" class="{{ request()->routeIs('loans.*') ? 'active' : '' }}">Loans</a>
-                </div>
-            </div>
+  <!-- OVERLAY -->
+  <div class="overlay" id="overlay"></div>
 
-            {{-- Businesses Group --}}
-            <div class="sidebar-group">
-                <a href="#" class="sidebar-toggle {{ request()->routeIs('businesses.*') ? 'open' : '' }}"
-                   onclick="event.preventDefault(); this.classList.toggle('open'); this.nextElementSibling.classList.toggle('hidden');">
-                    <span>Businesses</span>
-                    <span class="arrow">▾</span>
-                </a>
-                <div class="sidebar-sub {{ request()->routeIs('businesses.*') ? '' : 'hidden' }}">
-                    <a href="{{ route('businesses.index') }}" class="{{ request()->routeIs('businesses.index') ? 'active' : '' }}">All Businesses</a>
-                    <a href="{{ route('businesses.create') }}" class="{{ request()->routeIs('businesses.create') ? 'active' : '' }}">Create Business</a>
-                </div>
-            </div>
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <i class="fas fa-chart-pie"></i>
+      <h2>Top5Way</h2>
+    </div>
 
-            <a href="{{ route('accounts.index') }}" class="{{ request()->routeIs('accounts.index') ? 'active' : '' }}">Accounts</a>
-            {{-- Contacts Group --}}
-            <div class="sidebar-group">
-                <a href="#" class="sidebar-toggle {{ request()->routeIs('contacts.*') ? 'open' : '' }}"
-                   onclick="event.preventDefault(); this.classList.toggle('open'); this.nextElementSibling.classList.toggle('hidden');">
-                    <span>Contacts</span>
-                    <span class="arrow">▾</span>
-                </a>
-                <div class="sidebar-sub {{ request()->routeIs('contacts.*') ? '' : 'hidden' }}">
-                    <a href="{{ route('contacts.index') }}" class="{{ request()->routeIs('contacts.index') ? 'active' : '' }}">All Contacts</a>
-                    <a href="{{ route('contacts.create') }}" class="{{ request()->routeIs('contacts.create') ? 'active' : '' }}">Create Contact</a>
-                </div>
-            </div>
+    <nav>
+      <!-- Dashboard -->
+      <a href="#" class="active"><i class="fas fa-th-large"></i> Dashboard</a>
 
-            <a href="{{ route('activity-logs.index') }}" class="{{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">History</a>
-            <a href="{{ route('report.index') }}" class="{{ request()->routeIs('report.*') ? 'active' : '' }}">Report</a>
-            <a href="{{ route('profile.edit') }}" class="{{ request()->routeIs('profile.*') ? 'active' : '' }}">Profile</a>
+      <!-- Transactions group -->
+      <div class="sidebar-group">
+        <button class="sidebar-toggle open" onclick="toggleSubmenu(this)">
+          <i class="fas fa-exchange-alt"></i> <span>Transactions</span>
+          <span class="arrow">▾</span>
+        </button>
+        <div class="sidebar-sub">
+          <a href="#"><i class="fas fa-list-ul"></i> All Transactions</a>
+          <a href="#"><i class="fas fa-plus-circle"></i> Create Transaction</a>
+          <a href="#"><i class="fas fa-tags"></i> Types</a>
+          <a href="#"><i class="fas fa-folder"></i> Categories</a>
+          <a href="#"><i class="fas fa-coins"></i> Currency Rates</a>
+          <a href="#"><i class="fas fa-hand-holding-usd"></i> Dues</a>
+          <a href="#"><i class="fas fa-calculator"></i> Fixed Costs</a>
+          <a href="#"><i class="fas fa-user-clock"></i> Salary Tracker</a>
+          <a href="#"><i class="fas fa-hand-holding-heart"></i> Loans</a>
+        </div>
+      </div>
 
-            <form method="POST" action="{{ route('logout') }}" style="margin-top: auto;">
-                @csrf
-                <button type="submit" style="background: none; border: 1px solid #475569; color: #cbd5e1; padding: 0.5rem 0.75rem; width: 100%; text-align: left; border-radius: 0.375rem; cursor: pointer;">
-                    Logout
-                </button>
-            </form>
-        </nav>
-    </aside>
+      <!-- Businesses -->
+      <div class="sidebar-group">
+        <button class="sidebar-toggle" onclick="toggleSubmenu(this)">
+          <i class="fas fa-store"></i> <span>Businesses</span>
+          <span class="arrow">▾</span>
+        </button>
+        <div class="sidebar-sub hidden">
+          <a href="#"><i class="fas fa-building"></i> All Businesses</a>
+          <a href="#"><i class="fas fa-plus"></i> Create Business</a>
+        </div>
+      </div>
 
-    <main class="main">
-        @if (session('success'))
-            <div class="flash">{{ session('success') }}</div>
-        @endif
-        @yield('content')
-    </main>
+      <!-- Accounts -->
+      <a href="#"><i class="fas fa-wallet"></i> Accounts</a>
 
-    <!--searchbale-creatable-select-->
-    <script>
-        (function() {
-            // Abort controller for the latest creation request
-            let createAbortController = null;
+      <!-- Contacts -->
+      <div class="sidebar-group">
+        <button class="sidebar-toggle" onclick="toggleSubmenu(this)">
+          <i class="fas fa-address-book"></i> <span>Contacts</span>
+          <span class="arrow">▾</span>
+        </button>
+        <div class="sidebar-sub hidden">
+          <a href="#"><i class="fas fa-users"></i> All Contacts</a>
+          <a href="#"><i class="fas fa-user-plus"></i> Create Contact</a>
+        </div>
+      </div>
 
-            // Close all open dropdowns when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.searchable-select-wrapper')) {
-                    document.querySelectorAll('.searchable-select-wrapper.open').forEach(function(el) {
-                        el.classList.remove('open');
-                    });
-                }
-            });
+      <a href="#"><i class="fas fa-history"></i> History</a>
+      <a href="#"><i class="fas fa-chart-bar"></i> Report</a>
+      <a href="#"><i class="fas fa-user-circle"></i> Profile</a>
 
-            // Filter options
-            window.filterSearchableSelect = function(input) {
-                const dropdown = input.closest('.ss-dropdown');
-                const options = dropdown.querySelectorAll('.ss-option');
-                const filter = input.value.toLowerCase();
-                options.forEach(function(opt) {
-                    if (opt.textContent.toLowerCase().includes(filter)) {
-                        opt.classList.remove('hidden-by-search');
-                    } else {
-                        opt.classList.add('hidden-by-search');
-                    }
-                });
-            };
+      <!-- logout -->
+      <div class="logout-btn">
+        <button onclick="alert('Logout clicked')">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </nav>
+  </aside>
 
-            // Select an option
-            window.selectSearchableOption = function(optionDiv) {
-                const wrapper = optionDiv.closest('.searchable-select-wrapper');
-                const hidden = wrapper.querySelector('input[type="hidden"]');
-                const selectedText = wrapper.querySelector('.ss-selected-text');
-                const dropdown = wrapper.querySelector('.ss-dropdown');
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+    <!-- flash demo -->
+    <div class="flash">
+      <i class="fas fa-check-circle" style="margin-right: 0.4rem;"></i> You're logged in, Mohammad Hamed Hasan!
+    </div>
 
-                hidden.value = optionDiv.dataset.value;
-                selectedText.textContent = optionDiv.textContent.trim();
+    <!-- header -->
+    <div class="main-header">
+      <div class="greeting">
+        <h1>Dashboard</h1>
+        <p>Welcome back, Mohammad Hamed Hasan</p>
+      </div>
+      <div class="header-actions">
+        <span class="badge"><i class="far fa-calendar-alt"></i> Today</span>
+        <a href="#" class="btn-outline"><i class="fas fa-pen"></i> Edit Profile</a>
+      </div>
+    </div>
 
-                wrapper.querySelectorAll('.ss-option.selected').forEach(function(el) {
-                    el.classList.remove('selected');
-                });
-                optionDiv.classList.add('selected');
+    <!-- stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="label">Total Balance</div>
+        <div class="value">5,245.00 ₺</div>
+        <div class="sub"><span class="trend">↑ 2.1%</span> vs last month</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Income</div>
+        <div class="value">3,210.00 ₺</div>
+        <div class="sub">+12 transactions</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Expenses</div>
+        <div class="value">1,890.00 ₺</div>
+        <div class="sub">-8 transactions</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Pending Dues</div>
+        <div class="value">450.00 ₺</div>
+        <div class="sub">3 items</div>
+      </div>
+    </div>
 
-                wrapper.classList.remove('open');
-                hidden.dispatchEvent(new Event('change', { bubbles: true }));
-            };
+    <!-- quick actions -->
+    <div class="action-row">
+      <a href="#" class="btn btn-primary"><i class="fas fa-plus-circle"></i> New Transaction</a>
+      <a href="#" class="btn"><i class="fas fa-upload"></i> Transfer</a>
+      <a href="#" class="btn"><i class="fas fa-file-invoice"></i> Report</a>
+      <a href="#" class="btn"><i class="fas fa-cog"></i> Settings</a>
+    </div>
 
-            // Create and select option using Axios (with request cancellation)
-            window.createAndSelectOption = async function(btn) {
-                const form = btn.closest('.ss-create-form');
-                const wrapper = form.closest('.searchable-select-wrapper');
-                const input = form.querySelector('.ss-create-input');
-                const name = input.value.trim();
-                if (!name) return;
+    <!-- extra placeholder (copy from original dashboard) -->
+    <div style="margin-top: 2.5rem; background: white; border-radius: 1rem; padding: 1.8rem; border: 1px solid #e9edf2;">
+      <h3 style="font-weight: 500; color: #0f172a; margin-bottom: 0.75rem;"><i class="fas fa-clock" style="color: #64748b; margin-right: 0.5rem;"></i> Recent Activity</h3>
+      <p style="color: #475569; font-size: 0.95rem;">No recent transactions. Start by creating a new transaction.</p>
+    </div>
+  </main>
 
-                const storeRoute = wrapper.dataset.store;
-                const csrf = wrapper.dataset.csrf;
-                const hidden = wrapper.querySelector('input[type="hidden"]');
-                const optionsContainer = wrapper.querySelector('.ss-options');
-                const selectedText = wrapper.querySelector('.ss-selected-text');
+  <!-- ===== SCRIPTS ===== -->
+  <script>
+    (function() {
+      // toggle sidebar on mobile
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+      const hamburger = document.getElementById('hamburgerBtn');
 
-                // Cancel any previous pending request
-                if (createAbortController) {
-                    createAbortController.abort();
-                }
-                createAbortController = new AbortController();
-                const signal = createAbortController.signal;
+      function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
+      }
 
-                // Gather extra fields
-                const extraData = {};
-                form.querySelectorAll('input[type="hidden"]').forEach(function(el) {
-                    extraData[el.name] = el.value;
-                });
-                form.querySelectorAll('select').forEach(function(el) {
-                    extraData[el.name] = el.value;
-                });
+      function openSidebar() {
+        sidebar.classList.add('open');
+        overlay.classList.add('show');
+      }
 
-                try {
-                    const response = await axios.post(storeRoute, {
-                        name: name,
-                        ...extraData
-                    }, {
-                        headers: {
-                            'X-CSRF-TOKEN': csrf,
-                            'Accept': 'application/json'
-                        },
-                        signal: signal
-                    });
+      hamburger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (sidebar.classList.contains('open')) {
+          closeSidebar();
+        } else {
+          openSidebar();
+        }
+      });
 
-                    const data = response.data;   // { id, name, effect, transfer (optional) }
+      overlay.addEventListener('click', closeSidebar);
 
-                    // Add new option to dropdown
-                    const newOption = document.createElement('div');
-                    newOption.className = 'ss-option';
-                    newOption.dataset.value = data.id;
-                    newOption.textContent = data.name;
-                    newOption.addEventListener('click', function() {
-                        selectSearchableOption(newOption);
-                    });
-                    optionsContainer.appendChild(newOption);
+      // close sidebar when clicking a link inside (on mobile)
+      sidebar.querySelectorAll('a, button').forEach(el => {
+        el.addEventListener('click', function() {
+          if (window.innerWidth <= 767) {
+            // but don't close if it's a toggle button (submenu)
+            if (!this.classList.contains('sidebar-toggle')) {
+              closeSidebar();
+            }
+          }
+        });
+      });
 
-                    // Select the new option
-                    selectSearchableOption(newOption);
+      // handle window resize: if desktop, remove open class
+      window.addEventListener('resize', function() {
+        if (window.innerWidth > 767) {
+          closeSidebar();
+        }
+      });
 
-                    // 🎯 Update the contact‑type mapping if the page provides the hook
-                    if (typeof window.updateTransactionTypeContactMap === 'function' && data.effect !== undefined) {
-                        window.updateTransactionTypeContactMap(
-                            data.id,
-                            data.effect,
-                            !!data.transfer   // default false if not present
-                        );
-                    }
+    })();
 
-                    // Clear and hide the form
-                    input.value = '';
-                    form.classList.add('hidden');
+    // toggle submenu (used inline)
+    function toggleSubmenu(btn) {
+      btn.classList.toggle('open');
+      const sub = btn.nextElementSibling;
+      if (sub) {
+        sub.classList.toggle('hidden');
+      }
+    }
 
-                } catch (error) {
-                    if (axios.isCancel(error)) {
-                        console.log('Request cancelled:', error.message);
-                    } else {
-                        alert('Could not create. Please try again.');
-                        console.error('Axios error:', error);
-                    }
-                } finally {
-                    if (createAbortController && createAbortController.signal === signal) {
-                        createAbortController = null;
-                    }
-                }
-            };
-        })(); // <-- This was missing! It closes the IIFE.
-    </script>
+    // (optional) keep submenus open if active – we set Transactions open by default
+    document.addEventListener('DOMContentLoaded', function() {
+      // ensure the first submenu is open (Transactions)
+      const firstToggle = document.querySelector('.sidebar-group .sidebar-toggle');
+      if (firstToggle) {
+        // already has 'open' class from HTML, but ensure sub is visible
+        const sub = firstToggle.nextElementSibling;
+        if (sub) sub.classList.remove('hidden');
+      }
+    });
+  </script>
 </body>
 </html>

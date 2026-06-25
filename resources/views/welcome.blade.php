@@ -125,7 +125,7 @@
         <!-- Main content -->
         <main>
             <h1>{{ config('app.name', 't5_hisab') }}</h1>
-            <p class="subtitle text-black">An Internal Financial Management Tool of Top5Way</p>
+            <p class="subtitle text-black">An Internal Financial Management System of Top5Way</p>
 
             <div class="actions">
                 @guest
@@ -145,68 +145,5 @@
             &copy; {{ date('Y') }} {{ config('app.name', 't5_hisab') }}. All rights reserved.
         </footer>
     </div>
-    {{-- <div class="min-h-screen bg-[#0b0f19] text-slate-100 flex flex-col justify-between antialiased font-sans relative overflow-hidden">
-    <!-- Ambient Background Glows (Desktop Only) -->
-    <div class="hidden md:block absolute top-0 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="hidden md:block absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
-
-    <!-- Header Navigation -->
-    @if (Route::has('login'))
-        <header class="w-full z-10">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-end">
-                <nav class="flex items-center gap-3 sm:gap-5 text-sm font-medium">
-                    @auth
-                        <a href="{{ url('/dashboard') }}" class="text-slate-400 hover:text-white transition duration-200 py-2 px-3 rounded-lg hover:bg-slate-900/50">Dashboard</a>
-                    @else
-                        <a href="{{ route('login') }}" class="text-slate-400 hover:text-white transition duration-200 py-2 px-3 rounded-lg hover:bg-slate-900/50">Log in</a>
-                        @if (Route::has('register'))
-                            <a href="{{ route('register') }}" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-semibold shadow-md shadow-indigo-600/20 transition duration-200 hidden sm:inline-block">Register</a>
-                        @endif
-                    @endauth
-                </nav>
-            </div>
-        </header>
-    @endif
-
-    <!-- Main Hero Content -->
-    <main class="flex-grow flex flex-col items-center justify-center text-center px-4 sm:px-6 max-w-4xl mx-auto w-full z-10 py-12">
-        <!-- Title -->
-        <h1 class="text-10xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white mb-6">
-            <span class="bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-indigo-300">
-                {{ config('app.name', 't5_hisab') }}
-            </span>
-        </h1>
-        
-        <!-- Subtitle -->
-        <p class="text-base sm:text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10">
-            An Internal Financial Management Tool for <span class="text-indigo-400 font-semibold tracking-wide">Top5Way</span>
-        </p>
-
-        <!-- Call to Actions -->
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md sm:max-w-none">
-            @guest
-                @if (Route::has('register'))
-                    <a href="{{ route('register') }}" class="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 transform hover:-translate-y-0.5 transition duration-200 text-center text-sm sm:text-base">
-                        Get Started
-                    </a>
-                @endif
-                @if (Route::has('login'))
-                    <a href="{{ route('login') }}" class="w-full sm:w-auto px-8 py-3.5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 font-semibold rounded-xl transform hover:-translate-y-0.5 transition duration-200 text-center text-sm sm:text-base">
-                        I already have an account
-                    </a>
-                @endif
-            @else
-                <a href="{{ url('/dashboard') }}" class="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 transform hover:-translate-y-0.5 transition duration-200 text-center text-sm sm:text-base">
-                    Go to Dashboard
-                </a>
-            @endauth
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="w-full py-6 text-center text-xs sm:text-sm text-slate-600 border-t border-slate-900/60 z-10">
-        &copy; {{ date('Y') }} {{ config('app.name', 't5_hisab') }}. All rights reserved.
-    </footer>
-</div> --}}
 </body>
 </html>
