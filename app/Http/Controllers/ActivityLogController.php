@@ -11,7 +11,11 @@ class ActivityLogController extends Controller
     public function index(Request $request)
     {
         $businessId = Auth::user()->default_business_id;
-        $query = ActivityLog::forBusiness($businessId)->with('user');
+        
+        // Only fetch records where action is 'updated' or 'deleted'
+        $query = ActivityLog::forBusiness($businessId)
+            ->whereIn('action', ['updated', 'deleted'])
+            ->with('user');
 
         // Search
         if ($request->filled('search')) {
@@ -39,9 +43,9 @@ class ActivityLogController extends Controller
 
         $logs = $query->orderBy('created_at', 'desc')->paginate(30)->appends($request->query());
 
-        // Data for filter dropdowns
-        $actions = ActivityLog::forBusiness($businessId)->select('action')->distinct()->pluck('action');
-        $modelTypes = ActivityLog::forBusiness($businessId)->select('model_type')->distinct()->pluck('model_type');
+        // Data for filter dropdowns (scoped to only 'updated' and 'deleted')
+        $actions = ActivityLog::forBusiness($businessId)->whereIn('action', ['updated', 'deleted'])->select('action')->distinct()->pluck('action');
+        $modelTypes = ActivityLog::forBusiness($businessId)->whereIn('action', ['updated', 'deleted'])->select('model_type')->distinct()->pluck('model_type');
 
         $filters = [
             ['name' => 'action', 'label' => 'Action', 'type' => 'select', 'options' => $actions->mapWithKeys(fn($a) => [$a => ucfirst($a)])->toArray()],
