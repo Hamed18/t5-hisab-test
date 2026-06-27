@@ -56,13 +56,17 @@ class CategoryController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|in:income,expense,both',
+            'type' => 'nullable|in:income,expense,both',
             'parent_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
 
-        $validated['is_system'] = false;  // manually created categories are not system
+        // Set default values for optional fields
+        $validated['type'] = $validated['type'] ?? 'both';
+        $validated['is_active'] = $validated['is_active'] ?? true;
+        $validated['is_system'] = false;
+        $validated['business_id'] = null; // Keep business_id nullable
 
         $category = Category::create($validated);
 

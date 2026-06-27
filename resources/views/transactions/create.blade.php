@@ -68,13 +68,20 @@
 
         <div class="form-row">
             <div class="form-group">
-                <label for="category_custom">Category Options *</label>
-                <select id="category_custom" name="category_custom" style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 0.375rem;" required>
-                    <option value="">-- Select Option --</option>
-                    <option value="xyz" {{ old('category_custom') == 'xyz' ? 'selected' : '' }}>xyz</option>
-                    <option value="abx" {{ old('category_custom') == 'abx' ? 'selected' : '' }}>abx</option>
-                    <option value="pqr" {{ old('category_custom') == 'pqr' ? 'selected' : '' }}>pqr</option>
-                </select>
+                <label for="category_id">Category</label>
+                @include('components.searchable-creatable-select', [
+                    'name'           => 'category_id',
+                    'options'        => isset($categories) ? $categories->pluck('name', 'id')->toArray() : [],
+                    'selected'       => old('category_id'),
+                    'placeholder'    => 'Search or create category',
+                    'creatable'      => true,
+                    'storeRoute'     => route('categories.store'),
+                    'creatableLabel' => 'Create new category',
+                    'extraFields'    => '
+                        <input type="hidden" name="type" value="both">
+                        <input type="hidden" name="is_active" value="1">
+                    ',
+                ])
             </div>
 
             <div class="form-group">

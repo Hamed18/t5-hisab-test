@@ -109,7 +109,7 @@ class TransactionController extends Controller
             'type'            => 'required|string|max:50',
             'business_id'     => 'required|exists:businesses,id',
             'category_id'     => 'nullable|exists:categories,id',
-            'category_custom' => 'required|in:xyz,abx,pqr', // ✅ Validating custom frontend dropdown selection
+            'category_custom' => 'nullable|in:xyz,abx,pqr', // Changed to nullable
             'account_id'      => 'required|exists:accounts,id',
             'amount'          => 'required|numeric|min:0',
             'currency'        => 'nullable|string|max:3',
@@ -141,7 +141,11 @@ class TransactionController extends Controller
         $validated['added_by_user_id'] = Auth::id();
         $validated['status'] = 'approved';
 
-$validated['type'] = $validated['category_custom'];
+        // Only set type if category_custom is provided, otherwise use a default
+        if (!empty($validated['category_custom'])) {
+            $validated['type'] = $validated['category_custom'];
+        }
+        
         $transaction = Transaction::create($validated);
 
         if ($request->hasFile('receipt_file')) {
@@ -225,7 +229,7 @@ public function update(Request $request, Transaction $transaction)
         'date' => 'required|date',
         'type' => 'required|in:'.TransactionType::active()->pluck('slug')->implode(','),
         'category_id' => 'nullable|exists:categories,id,business_id,'.$request->business_id,
-        'category_custom' => 'required|in:xyz,abx,pqr', 
+        'category_custom' => 'nullable|in:xyz,abx,pqr', // Changed to nullable
         'account_id' => 'required|exists:accounts,id',
         'amount' => 'required|numeric|min:0',
         'currency' => 'nullable|string|size:3',
@@ -257,7 +261,9 @@ public function update(Request $request, Transaction $transaction)
     }
 
     // Map custom view selection cleanly to database column name framework during update
-    $validated['type'] = $validated['category_custom'];
+    if (!empty($validated['category_custom'])) {
+        $validated['type'] = $validated['category_custom'];
+    }
 
     $transaction->update($validated);
 
