@@ -11,13 +11,11 @@
     .btn-secondary { background: #6b7280; color: white; text-decoration: none; }
 </style>
 
-<h1>Edit Transaction</h1>
-
 @if ($errors->any())
     <div style="background: #fee2e2; color: #991b1b; padding: 0.75rem; border-radius: 0.375rem; margin-bottom: 1rem;">
         @foreach ($errors->all() as $error)
             <div>{{ $error }}</div>
-        @endforeach
+        @endforeach 
     </div>
 @endif
 
@@ -94,6 +92,23 @@
             @endif
         </select>
     </div>
+
+     <div class="form-row">
+            <div class="form-group">
+                <label for="currency">Currency *</label>
+                @php
+                    $currenciesList = (!isset($currencies) || $currencies->isEmpty()) ? collect(['BDT', 'USD', 'EUR']) : $currencies;
+                    if (!$currenciesList->contains('BDT')) { $currenciesList->prepend('BDT'); }
+                    $selectedCurrency = old('currency', 'BDT');
+                @endphp
+                @include('components.searchable-creatable-select', [
+                    'name'           => 'currency',
+                    'options'        => $currenciesList->mapWithKeys(fn($c) => [$c => $c])->toArray(),
+                    'selected'       => $selectedCurrency,
+                    'placeholder'    => 'Select currency',
+                    'creatable'      => false,
+                ])
+            </div>
 
     <div class="form-group">
         <label for="amount">Amount *</label>

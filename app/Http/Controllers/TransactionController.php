@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use App\Models\Transaction;
 use App\Models\Account;
 use App\Models\Business;
@@ -42,12 +40,11 @@ class TransactionController extends Controller
         $query->where('is_active', $request->is_active == '1');
     }
 
-    $transactions = $query->orderBy('date', 'desc')  // Changed from 'name' to 'date'
-        ->orderBy('id', 'desc')  // Secondary sort
+    $transactions = $query->orderBy('date', 'desc')  
+        ->orderBy('id', 'desc') 
         ->paginate(20)
         ->appends($request->query());
 
-    // Build filters
     $types = Transaction::select('type')->distinct()->pluck('type');
     $filters = [
         [
@@ -115,7 +112,7 @@ class TransactionController extends Controller
             'category_custom' => 'required|in:xyz,abx,pqr', // ✅ Validating custom frontend dropdown selection
             'account_id'      => 'required|exists:accounts,id',
             'amount'          => 'required|numeric|min:0',
-            'currency'        => 'required|string|max:3',
+            'currency'        => 'nullable|string|max:3',
             'exchange_rate'   => 'nullable|numeric|min:0',
             'description'     => 'nullable|string|max:500',
             'notes'           => 'nullable|string',
@@ -231,7 +228,7 @@ public function update(Request $request, Transaction $transaction)
         'category_custom' => 'required|in:xyz,abx,pqr', 
         'account_id' => 'required|exists:accounts,id',
         'amount' => 'required|numeric|min:0',
-        'currency' => 'required|string|size:3',
+        'currency' => 'nullable|string|size:3',
         'description' => 'nullable|string|max:500',
         'notes' => 'nullable|string',
         'exchange_rate' => 'nullable|numeric',
@@ -260,7 +257,7 @@ public function update(Request $request, Transaction $transaction)
     }
 
     // Map custom view selection cleanly to database column name framework during update
-    $validated['category_type'] = $validated['category_custom'];
+    $validated['type'] = $validated['category_custom'];
 
     $transaction->update($validated);
 
