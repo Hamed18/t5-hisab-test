@@ -10,8 +10,8 @@ class Category extends Model
     use LogsActivity;
 
     protected $fillable = [
-        'business_id', 'name', 'type', 'parent_id',
-        'icon', 'color', 'description', 'is_system', 'is_active', 'display_order',
+        'name', 'type', 'parent_id', 'business_id',
+        'description', 'is_system', 'is_active', 'display_order',
     ];
 
     protected $casts = [

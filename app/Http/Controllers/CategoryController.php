@@ -44,39 +44,30 @@ class CategoryController extends Controller
 
     public function create()
     {
-        $businessId = $this->currentBusinessId();
-        $parentCategories = Category::where('business_id', $businessId)
-            ->active()
-            ->whereNull('parent_id')
-            ->get();
+        $parentCategories = Category::whereNull('parent_id')->get();
 
         return view('categories.create', compact('parentCategories'));
     }
 
     public function store(Request $request)
     {
-        $businessId = $this->currentBusinessId();
-
         // Release session lock so concurrent requests don't block
         session_write_close();
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:income,expense,both',
-            'parent_id' => 'nullable|exists:categories,id,business_id,'.$businessId,
-            'icon' => 'nullable|string|max:50',
-            'color' => 'nullable|string|max:7',
+            'parent_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
 
-        $validated['business_id'] = $businessId;
         $validated['is_system'] = false;  // manually created categories are not system
 
         $category = Category::create($validated);
 
         if ($request->ajax() || $request->wantsJson()) {
-                return response()->json(['id' => $category->id, 'name' => $category->name]);
+            return response()->json(['id' => $category->id, 'name' => $category->name]);
         }
 
         return redirect()->route('categories.index')
@@ -85,14 +76,7 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
-        if ($category->business_id !== $this->currentBusinessId()) {
-            abort(403);
-        }
-
-        $businessId = $this->currentBusinessId();
-        $parentCategories = Category::where('business_id', $businessId)
-            ->active()
-            ->whereNull('parent_id')
+        $parentCategories = Category::whereNull('parent_id')
             ->where('id', '!=', $category->id)
             ->get();
 
@@ -101,18 +85,10 @@ class CategoryController extends Controller
 
     public function update(Request $request, Category $category)
     {
-        if ($category->business_id !== $this->currentBusinessId()) {
-            abort(403);
-        }
-
-        $businessId = $this->currentBusinessId();
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:income,expense,both',
-            'parent_id' => 'nullable|exists:categories,id,business_id,'.$businessId,
-            'icon' => 'nullable|string|max:50',
-            'color' => 'nullable|string|max:7',
+            'parent_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
@@ -125,10 +101,6 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
-        if ($category->business_id !== $this->currentBusinessId()) {
-            abort(403);
-        }
-
         // Prevent deletion if used by transactions or has children
         if ($category->transactions()->exists()) {
             return back()->withErrors(['error' => 'Cannot delete category that has transactions.']);

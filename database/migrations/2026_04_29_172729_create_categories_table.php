@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('name');
             $table->enum('type', ['income', 'expense', 'both']);
             $table->foreignId('parent_id')->nullable()->constrained('categories')->nullOnDelete();
-            $table->string('icon', 50)->nullable();
-            $table->string('color', 7)->nullable();
+            // $table->string('icon', 50)->nullable();
+            // $table->string('color', 7)->nullable();
             $table->text('description')->nullable();
             $table->boolean('is_system')->default(false);
             $table->boolean('is_active')->default(true);

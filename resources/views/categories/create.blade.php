@@ -26,7 +26,7 @@
             <option value="both" {{ old('type') == 'both' ? 'selected' : '' }}>Both</option>
         </select>
     </div>
-    <!--<div class="form-group">
+    <div class="form-group">
         <label for="parent_id">Parent Category (optional)</label>
         <select id="parent_id" name="parent_id">
             <option value="">-- None --</option>
@@ -36,7 +36,7 @@
                 </option>
             @endforeach
         </select>
-    </div>-->
+    </div>
     <div class="form-group">
         <label for="description">Description</label>
         <textarea id="description" name="description" rows="2">{{ old('description') }}</textarea>
