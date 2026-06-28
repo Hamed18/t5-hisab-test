@@ -119,7 +119,6 @@ class TransactionTypeController extends Controller
 
     public function destroy(TransactionType $transactionType)
     {
-        // Prevent deletion if any transaction uses this type
         $count = \App\Models\Transaction::where('type', $transactionType->slug)->count();
         if ($count > 0) {
             return back()->withErrors('Cannot delete type that is used by '.$count.' transactions.');
